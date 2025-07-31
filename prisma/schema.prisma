@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+ 
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role @default(STUDENT)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  assignments  StudentAssignment[]
+  reports      Report[]
+}
+
+
+
+model AdminAssignment {
+  id            String           @id @default(uuid())
+  userId     String
+  title     String
+  description        String
+  deadline        DateTime
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  assignemnts  StudentAssignment[]
+
+}
+model StudentAssignment {
+  id    String        @id @default(ulid())
+  userId     String
+  adminAssignmentId    String
+  assingmenturl        String
+  isReviwed             Boolean @default(false)
+  createdAt            DateTime         @default(now())
+  student       User          @relation(fields: [userId], references: [id])
+  adminAssignment AdminAssignment @relation(fields: [adminAssignmentId], references: [id])
+  report        Report?
+  
+}
+
+model Report {
+  id           String    @id @default(uuid())
+  studentassignmentId String    @unique
+  userId    String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  details      String   @db.Text
+  assignment   StudentAssignment @relation(fields: [studentassignmentId], references: [id])
+  student      User    @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum AssignmentStatus {
+  SENT
+  NOT_SENT
+}
